@@ -67,7 +67,7 @@ static void serial_putchar(char c) {
     // COM1 ポーリング
     uint8_t status;
     do {
-        asm volatile("inb %1, %0" : "=a"(status) : "d"((uint16_t)0x3F8 + 5));
+        //asm volatile("inb %1, %0" : "=a"(status) : "d"((uint16_t)0x3F8 + 5));
     } while (!(status & 0x20));
     asm volatile("outb %0, %1" :: "a"((uint8_t)c), "d"((uint16_t)0x3F8));
 }

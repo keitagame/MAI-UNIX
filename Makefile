@@ -74,7 +74,7 @@ run: $(KERNEL)
 	qemu-system-i386 -kernel $(KERNEL) -m 64M -vga std -no-reboot -no-shutdown
 
 run-serial: $(KERNEL)
-	qemu-system-i386 -kernel $(KERNEL) -m 64M -vga std -serial stdio -no-reboot -no-shutdown
+	qemu-system-i386 -kernel $(KERNEL) -m 64M  -no-reboot -no-shutdown
 
 run-debug: $(KERNEL)
 	qemu-system-i386 -kernel $(KERNEL) -m 64M -vga std -serial stdio -s -S -no-reboot -no-shutdown &
