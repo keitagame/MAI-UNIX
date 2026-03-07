@@ -1,6 +1,7 @@
 // kernel/idt.c - 割り込みディスクリプタテーブル
 #include "../include/kernel/idt.h"
 #include "../include/kernel/types.h"
+#include "../kernel/io.h"
 
 #define IDT_ENTRIES 256
 
@@ -31,18 +32,43 @@ void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags) {
     idt[num].type_attr   = flags;
 }
 
+
 static void pic_remap(void) {
     // PIC初期化 (IRQ 0-15 → INT 32-47)
-    asm volatile("outb %0, %1" :: "a"((uint8_t)0x11), "d"((uint16_t)0x20));
-    asm volatile("outb %0, %1" :: "a"((uint8_t)0x11), "d"((uint16_t)0xA0));
-    asm volatile("outb %0, %1" :: "a"((uint8_t)0x20), "d"((uint16_t)0x21));
-    asm volatile("outb %0, %1" :: "a"((uint8_t)0x28), "d"((uint16_t)0xA1));
-    asm volatile("outb %0, %1" :: "a"((uint8_t)0x04), "d"((uint16_t)0x21));
-    asm volatile("outb %0, %1" :: "a"((uint8_t)0x02), "d"((uint16_t)0xA1));
-    asm volatile("outb %0, %1" :: "a"((uint8_t)0x01), "d"((uint16_t)0x21));
-    asm volatile("outb %0, %1" :: "a"((uint8_t)0x01), "d"((uint16_t)0xA1));
-    asm volatile("outb %0, %1" :: "a"((uint8_t)0x00), "d"((uint16_t)0x21));
-    asm volatile("outb %0, %1" :: "a"((uint8_t)0x00), "d"((uint16_t)0xA1));
+    outb(0x20, 0x11);
+    outb(0xA0, 0x11);
+    outb(0x21, 0x20);
+    outb(0xA1, 0x28);
+    outb(0x21, 0x04);
+    outb(0xA1, 0x02);
+    outb(0x21, 0x01);
+    outb(0xA1, 0x01);
+
+    // IRQ0, IRQ1 だけ有効
+    outb(0x21, 0xFC);  // 1111 1100
+    outb(0xA1, 0xFF);  // スレーブは全部マスク
+}
+static void ps2_flush_output(void) {
+    while (inb(0x64) & 1) {
+        inb(0x60);  // 出力バッファを読み捨て
+    }
+}
+
+static void ps2_init(void) {
+    ps2_flush_output();
+    // 1. コマンドバイト読み出し
+    outb(0x64, 0x20);
+    uint8_t status = inb(0x60);
+
+    // 2. IRQ1 を有効化
+    status |= 0x01;
+
+    // 3. コマンドバイト書き込み
+    outb(0x64, 0x60);
+    outb(0x60, status);
+
+    // 4. キーボード有効化
+    outb(0x60, 0xF4);
 }
 
 void idt_init(void) {
@@ -98,4 +124,6 @@ void idt_init(void) {
 
     asm volatile("lidt %0" :: "m"(idt_ptr));
     asm volatile("sti");
+    ps2_init();
+
 }

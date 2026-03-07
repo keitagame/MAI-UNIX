@@ -4,7 +4,7 @@
 #include "../include/kernel/mm.h"
 #include "../include/kernel/types.h"
 
-extern void keyboard_handler(uint8_t sc);
+extern void keyboard_handler();
 extern void scheduler_tick(void);
 
 // PIC EOI
@@ -28,7 +28,7 @@ void irq_handler(regs_t* r) {
         scheduler_tick();
         break;
     case 1: // キーボード
-        keyboard_handler(inb(0x60));
+        keyboard_handler();
         break;
     default:
         break;

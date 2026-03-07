@@ -6,6 +6,8 @@
 #include "../include/kernel/stdint.h"
 
 #define COM1 0x3F8
+// tty.c の先頭あたり
+extern int serial_read_char(void);
 
 static inline void outb(uint16_t port, uint8_t val) {
     asm volatile("outb %0, %1" : : "a"(val), "Nd"(port));
@@ -134,7 +136,10 @@ static const char sc_shift[] = {
 static int shift_held = 0;
 static int ctrl_held  = 0;
 
-void keyboard_handler(uint8_t scancode) {
+void keyboard_handler() {
+    uint8_t scancode = inb(0x60);
+    
+   
     if (scancode == 0x2A || scancode == 0x36) { shift_held = 1; return; }
     if (scancode == 0xAA || scancode == 0xB6) { shift_held = 0; return; }
     if (scancode == 0x1D) { ctrl_held = 1; return; }
@@ -162,12 +167,17 @@ void keyboard_handler(uint8_t scancode) {
 
 // ブロッキング読み取り
 char tty_getchar(void) {
+   
+   
+
+    
     while (kb_head == kb_tail) {
         asm volatile("hlt"); // 割り込み待ち
     }
     char c = kb_buf[kb_tail];
     kb_tail = (kb_tail + 1) % KB_BUF_SIZE;
     return c;
+
 }
 
 // ラインバッファ付き読み取り (シェル用)

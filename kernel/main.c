@@ -38,6 +38,7 @@ extern void ramfs_write_file(vnode_t* parent, const char* name, const char* data
 extern vnode_t* tty_get_vnode(void);
 extern file_t*  file_open(const char* path, int flags);
 
+
 // isr_handler から syscall をディスパッチ
 // (irq.c の isr_handler を上書き)
 void isr_handler_ext(regs_t* r) {
