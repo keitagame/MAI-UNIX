@@ -3,6 +3,26 @@
 #include "../include/kernel/vfs.h"
 #include "../include/kernel/mm.h"
 #include "../include/kernel/proc.h"
+#include "../include/kernel/stdint.h"
+
+#define COM1 0x3F8
+
+static inline void outb(uint16_t port, uint8_t val) {
+    asm volatile("outb %0, %1" : : "a"(val), "Nd"(port));
+}
+
+static inline uint8_t inb(uint16_t port) {
+    uint8_t ret;
+    asm volatile("inb %1, %0" : "=a"(ret) : "Nd"(port));
+    return ret;
+}
+
+void serial_write(char c) {
+    // 送信バッファが空くまで待つ
+    while ((inb(COM1 + 5) & 0x20) == 0);
+
+    outb(COM1, c);
+}
 
 // ===== VGA =====
 #define VGA_BASE  0xB8000
@@ -34,6 +54,7 @@ static void vga_update_cursor(void) {
 }
 
 void tty_putchar(char c) {
+    serial_write(c);
     if (c == '\n') {
         cur_col = 0;
         if (++cur_row >= VGA_ROWS) vga_scroll();

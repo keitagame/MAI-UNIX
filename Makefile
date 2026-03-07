@@ -71,7 +71,7 @@ iso: $(KERNEL)
 	@echo "ISO: $(ISO)"
 
 run: $(KERNEL)
-	qemu-system-i386 -kernel $(KERNEL) -m 64M -vga std -no-reboot -no-shutdown
+	qemu-system-i386 -kernel $(KERNEL) -m 64M -vga std -no-reboot -no-shutdown -nographic
 
 run-serial: $(KERNEL)
 	qemu-system-i386 -kernel $(KERNEL) -m 64M  -no-reboot -no-shutdown
