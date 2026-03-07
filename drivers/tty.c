@@ -93,17 +93,20 @@ static void serial_putchar(char c) {
     asm volatile("outb %0, %1" :: "a"((uint8_t)c), "d"((uint16_t)0x3F8));
 }
 
-void serial_puts(const char* s) { while (*s) { if (*s == '\n') serial_putchar('\r'); serial_putchar(*s++); } }
+void serial_puts(const char* s) { while (*s) { if (*s == '\n') serial_write('\r'); serial_write(*s++); } }
+#define COM1 0x3F8
+
 
 void serial_init(void) {
-    asm volatile("outb %0, %1" :: "a"((uint8_t)0x00), "d"((uint16_t)0x3F9));
-    asm volatile("outb %0, %1" :: "a"((uint8_t)0x80), "d"((uint16_t)0x3FB));
-    asm volatile("outb %0, %1" :: "a"((uint8_t)0x03), "d"((uint16_t)0x3F8));
-    asm volatile("outb %0, %1" :: "a"((uint8_t)0x00), "d"((uint16_t)0x3F9));
-    asm volatile("outb %0, %1" :: "a"((uint8_t)0x03), "d"((uint16_t)0x3FB));
-    asm volatile("outb %0, %1" :: "a"((uint8_t)0xC7), "d"((uint16_t)0x3FA));
-    asm volatile("outb %0, %1" :: "a"((uint8_t)0x0B), "d"((uint16_t)0x3FC));
+    outb(COM1 + 1, 0x00);    // 割り込み無効
+    outb(COM1 + 3, 0x80);    // DLAB = 1
+    outb(COM1 + 0, 0x03);    // divisor low  (38400 baud)
+    outb(COM1 + 1, 0x00);    // divisor high
+    outb(COM1 + 3, 0x03);    // DLAB = 0, 8N1
+    outb(COM1 + 2, 0xC7);    // FIFO enable
+    outb(COM1 + 4, 0x0B);    // DTR, RTS, OUT2
 }
+
 
 void kprintf(const char* fmt, ...);  // 後で定義
 

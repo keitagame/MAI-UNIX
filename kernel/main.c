@@ -25,6 +25,7 @@ extern void tty_clear(void);
 extern void tty_puts(const char* s);
 extern void tty_putchar(char c);
 extern void serial_init(void);
+extern void serial_write(char c);
 extern void serial_puts(const char* s);
 extern void pit_init(void);
 extern void kprintf(const char* fmt, ...);
@@ -162,7 +163,7 @@ static void init_process(void) {
 void kernel_main(uint32_t magic, mboot_info_t* mbi) {
     serial_init();
     tty_clear();
-
+    serial_write('a');
     serial_puts("[BOOT] MyOS kernel starting...\n");
     tty_puts("MyOS booting...\n");
 
