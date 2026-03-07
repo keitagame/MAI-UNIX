@@ -67,7 +67,7 @@ iso: $(KERNEL)
 	cp $(KERNEL) isodir/boot/
 	@printf 'set timeout=0\nset default=0\nmenuentry "MyOS" {\n    multiboot /boot/myos.bin\n    boot\n}\n' \
 	    > isodir/boot/grub/grub.cfg
-	grub-mkrescue -o $(ISO) isodir 2>/dev/null
+	grub-mkrescue -o $(ISO) isodir 
 	@echo "ISO: $(ISO)"
 
 run: $(KERNEL)
